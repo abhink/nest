@@ -3,23 +3,7 @@ package nest
 import (
 	"fmt"
 	"reflect"
-	"strings"
 )
-
-func getField(f string) (string, string) {
-	fs := strings.Split(f, ":")
-	if len(fs) == 1 {
-		return fs[0], ""
-	}
-	return fs[0], fs[1]
-}
-
-func nextField(fields []string) []string {
-	if len(fields) == 1 {
-		return []string{"$"}
-	}
-	return fields[1:]
-}
 
 func getForEach(fields []string, v, dst reflect.Value) error {
 	for i := 0; i < v.Len(); i++ {

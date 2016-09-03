@@ -92,3 +92,13 @@ var Av = &A{
 		},
 	},
 }
+
+var Bv = &struct {
+	S [][]string
+}{
+	S: [][]string{
+		[]string{"aaa", "sss", "ddd"},
+		[]string{"zzz", "xxx", "ccc"},
+		[]string{"qqq", "www", "eee", "rrr", "fff"},
+	},
+}

@@ -8,6 +8,10 @@ import (
 )
 
 func Get(path string, src, dst interface{}) error {
+	// if fields, err := parsePath(path); err != nil {
+	// 	return fmt.Errorf("illegal path modifiers: %v", err)
+	// }
+
 	v := reflect.ValueOf(src)
 	t := reflect.TypeOf(src)
 	fmt.Println("Getting path:", path, v, t)
@@ -33,23 +37,17 @@ func get(fields []string, val, dst reflect.Value) error {
 
 	switch val.Kind() {
 	case reflect.Slice:
-		if err := processSlice(fields, val, dst); err != nil {
-			return err
-		}
-		fmt.Println("Processed value:", dst)
+		return processSlice(fields, val, dst)
+		// fmt.Println("Processed value:", dst)
 	case reflect.Struct:
-		if err := processStruct(fields, val, dst); err != nil {
-			return err
-		}
+		return processStruct(fields, val, dst)
 	case reflect.Map:
-		return nil
+		return processMap(fields, val, dst)
 	case reflect.String, reflect.Int:
 		fmt.Println("Got string", val, fields)
 		dst.Set(val)
 	case reflect.Ptr:
-		if err := get(fields, val.Elem(), dst); err != nil {
-			return err
-		}
+		return get(fields, val.Elem(), dst)
 	default:
 		fmt.Println("Got something else", val, fields, val.Kind())
 	}
@@ -93,4 +91,11 @@ func processStruct(fields []string, v, dst reflect.Value) error {
 		return fmt.Errorf("error getting struct field %v - %v", fields[0], err)
 	}
 	return nil
+}
+
+func processMap(fields []string, v, dst reflect.Value) error {
+	f, _ := getField(fields[0])
+	k := reflect.ValueOf(f)
+	val := v.MapIndex(k)
+	return get(nextField(fields), val, dst)
 }

@@ -238,6 +238,10 @@ func TestComplexValueFlattenBD(t *testing.T) {
 	if result[7].Eint != r {
 		t.Errorf("unexpected ouput: %#v -- %v", result[8].Eint, r)
 	}
+	// Get("/Bslc/:ALL:FLATTEN/Dslc/:ALL:FLATTEN/Eslc/:ALL", Av, &result)
+	// Get("/Bslc:ALL:FLATTEN/Dslc:ALL:FLATTEN/Eslc:ALL", Av, &result)
+	// Get("/Bslc/:A:F/Dslc/:A:F/Eslc/:A", Av, &result)
+	// Get("/Bslc:A:F/Dslc:A:F/Eslc:A", Av, &result)
 }
 
 func TestComplexValueIndex(t *testing.T) {
@@ -273,5 +277,85 @@ func TestComplexValueSliceC(t *testing.T) {
 	}
 	if !reflect.DeepEqual(result, r) {
 		t.Errorf("unexpected ouput: %#v -- %v", result, r)
+	}
+}
+
+func TestMapSimple(t *testing.T) {
+	r := "222 33"
+	var result string
+
+	if err := Get("/Bslc/0/Dslc/1/Eslc/2/Emap/k3", Av, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %v", result, r)
+	}
+}
+
+func TestMapSlice(t *testing.T) {
+	r := []string{
+		"111 13", "111 23", "111 33",
+		"222 13", "222 23", "222 33",
+		"333 13", "333 23", "333 33",
+	}
+	var result = []string{}
+
+	if err := Get("/Bslc/0/Dslc/*:-/Eslc/*/Emap/k3", Av, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestSliceSlice(t *testing.T) {
+	r := []string{
+		"aaa", "sss", "ddd", "zzz", "xxx", "ccc", "qqq", "www", "eee", "rrr", "fff",
+	}
+
+	var result = []string{}
+
+	if err := Get("/S/*:-/*", Bv, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestSliceSliceNoFlat(t *testing.T) {
+	r := [][]string{
+		[]string{"aaa", "sss", "ddd"},
+		[]string{"zzz", "xxx", "ccc"},
+		[]string{"qqq", "www", "eee", "rrr", "fff"},
+	}
+
+	var result = [][]string{}
+
+	if err := Get("/S/*", Bv, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestSliceOnly(t *testing.T) {
+	v := [][]string{
+		[]string{"aaa", "sss", "ddd"},
+		[]string{"zzz", "xxx", "ccc"},
+		[]string{"qqq", "www", "eee", "rrr", "fff"},
+	}
+	r := []string{
+		"aaa", "sss", "ddd", "zzz", "xxx", "ccc", "qqq", "www", "eee", "rrr", "fff",
+	}
+
+	var result = []string{}
+
+	if err := Get("/*:-/*", v, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
 	}
 }
