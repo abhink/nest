@@ -3,8 +3,17 @@ package nest
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 )
+
+func isIndex(f string) bool {
+	i, err := strconv.Atoi(f)
+	if err != nil || i < 0 {
+		return false
+	}
+	return true
+}
 
 func getField(f string) (string, string) {
 	fs := strings.Split(f, ":")
@@ -21,19 +30,21 @@ func nextField(fields []string) []string {
 	return fields[1:]
 }
 
-func getForEach(fields []string, v, dst reflect.Value) error {
+// retain structure -- . "/Bslc/./Dslc/*/Dstr"
+func getForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for i := 0; i < v.Len(); i++ {
-		if err := get(nextField(fields), v.Index(i), dst); err != nil {
+		if err := get(nextField(fields), v.Index(i), dst, keys...); err != nil {
 			return fmt.Errorf("error setting slice index %d - %v", i, err)
 		}
 	}
 	return nil
 }
 
-func getElemForEach(fields []string, v, dst reflect.Value) error {
+// open structure -- *
+func getElemForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for i := 0; i < v.Len(); i++ {
 		d := reflect.New(dst.Type().Elem()).Elem()
-		if err := get(nextField(fields), v.Index(i), d); err != nil {
+		if err := get(nextField(fields), v.Index(i), d, keys...); err != nil {
 			return fmt.Errorf("error setting slice index %d - %v", i, err)
 		}
 		dst.Set(reflect.Append(dst, d))
