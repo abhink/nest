@@ -9,6 +9,7 @@ type B struct {
 	Bstr string
 	Cptr *C
 	Dslc []*D
+	Bmap map[*mkey]*E
 }
 
 type C struct {
@@ -38,6 +39,17 @@ var e3 = &E{113, "OUT3", ms{"k1": "113 1", "k2": "113 1", "k3": "113 1"}}
 var e4 = &E{114, "OUT4", ms{"k1": "114 1", "k2": "114 1", "k3": "114 1"}}
 var e5 = &E{115, "OUT5", ms{"k1": "115 1", "k2": "115 1", "k3": "115 1"}}
 
+type mkey struct {
+	I int
+	S string
+}
+
+var mk1 = &mkey{1, "mkey1"}
+var mk2 = &mkey{2, "mkey2"}
+var mk3 = &mkey{3, "mkey3"}
+var mk4 = &mkey{4, "mkey4"}
+var mk5 = &mkey{5, "mkey5"}
+
 var Av = &A{
 	Astr: "A",
 	Bslc: []*B{
@@ -65,6 +77,7 @@ var Av = &A{
 					},
 				},
 			},
+			map[*mkey]*E{mk1: e1, mk2: e2},
 		}, &B{
 			"AB2",
 			&C{"AB2C", &E{1, "AB2CE1", ms{"c": "1"}}, me{1: e1, 4: e4, 5: e5, 2: e1}},
@@ -89,6 +102,7 @@ var Av = &A{
 					},
 				},
 			},
+			map[*mkey]*E{mk1: e4, mk2: e5, mk3: e3},
 		},
 	},
 }

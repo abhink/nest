@@ -17,7 +17,7 @@ func TestSlice(t *testing.T) {
 
 	var result []string
 
-	if err := Get("/*/S", v, &result); err != nil {
+	if err := Get("/./S", v, &result); err != nil {
 		t.Errorf("error Getting value: %v", err)
 	}
 
@@ -27,7 +27,7 @@ func TestSlice(t *testing.T) {
 
 	intr := []int{}
 
-	if err := Get("/*/I", v, &intr); err != nil {
+	if err := Get("/./I", v, &intr); err != nil {
 		t.Errorf("error Getting value: %v", err)
 	}
 
@@ -122,7 +122,7 @@ func TestComplexSlice(t *testing.T) {
 	}
 	var result = [][]string{}
 
-	if err := Get("/Bslc/*/Dslc/*/Dstr", Av, &result); err != nil {
+	if err := Get("/Bslc/./Dslc/./Dstr", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -134,7 +134,7 @@ func TestComplexSliceFlatten(t *testing.T) {
 	r := []string{"AB1D1", "AB1D2", "AB1D3", "AB2D1", "AB2D2", "AB2D3"}
 	var result = []string{}
 
-	if err := Get("/Bslc/*:-/Dslc/*/Dstr", Av, &result); err != nil {
+	if err := Get("/Bslc/*/Dslc/./Dstr", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -146,7 +146,7 @@ func TestComplexSliceInt(t *testing.T) {
 	r := []int{11, 12, 13}
 	var result = []int{}
 
-	if err := Get("/Bslc/0/Dslc/0/Eslc/*/Eint", Av, &result); err != nil {
+	if err := Get("/Bslc/0/Dslc/0/Eslc/./Eint", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -158,7 +158,7 @@ func TestComplexSliceIntFlatten(t *testing.T) {
 	r := []int{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29}
 	var result = []int{}
 
-	if err := Get("/Bslc/*:-/Dslc/*:-/Eslc/*/Eint", Av, &result); err != nil {
+	if err := Get("/Bslc/*/Dslc/*/Eslc/./Eint", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -173,7 +173,7 @@ func TestComplexSliceIntFlattenPartial1(t *testing.T) {
 	}
 	var result = [][]int{}
 
-	if err := Get("/Bslc/*/Dslc/*:-/Eslc/*/Eint", Av, &result); err != nil {
+	if err := Get("/Bslc/./Dslc/*/Eslc/./Eint", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -188,7 +188,7 @@ func TestComplexSliceIntFlattenPartial2(t *testing.T) {
 	}
 	var result = [][]int{}
 
-	if err := Get("/Bslc/*:-/Dslc/*/Eslc/*/Eint", Av, &result); err != nil {
+	if err := Get("/Bslc/*/Dslc/./Eslc/./Eint", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -200,7 +200,7 @@ func TestComplexValue(t *testing.T) {
 	r := "AB2D2E2"
 	var result = [][][]*E{}
 
-	if err := Get("/Bslc/*/Dslc/*/Eslc", Av, &result); err != nil {
+	if err := Get("/Bslc/./Dslc/./Eslc", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result[1][1][1].Estr, r) {
@@ -212,7 +212,7 @@ func TestComplexValueFlattenB(t *testing.T) {
 	r := 18
 	var result = [][]*E{}
 
-	if err := Get("/Bslc/*:-/Dslc/*/Eslc", Av, &result); err != nil {
+	if err := Get("/Bslc/*/Dslc/./Eslc", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if result[2][1].Eint != r {
@@ -232,7 +232,7 @@ func TestComplexValueFlattenBD(t *testing.T) {
 	r := 18
 	var result = []*E{}
 
-	if err := Get("/Bslc/*:-/Dslc/*:-/Eslc/*", Av, &result); err != nil {
+	if err := Get("/Bslc/*/Dslc/*/Eslc/.", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if result[7].Eint != r {
@@ -272,7 +272,7 @@ func TestComplexValueSliceC(t *testing.T) {
 	r := []int{1, 1}
 	var result = []int{}
 
-	if err := Get("/Bslc/*/Cptr/Eptr/Eint", Av, &result); err != nil {
+	if err := Get("/Bslc/./Cptr/Eptr/Eint", Av, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -300,7 +300,35 @@ func TestMapSlice(t *testing.T) {
 	}
 	var result = []string{}
 
-	if err := Get("/Bslc/0/Dslc/*:-/Eslc/*/Emap/k3", Av, &result); err != nil {
+	if err := Get("/Bslc/0/Dslc/*/Eslc/./Emap/k3", Av, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestMapSliceIndex(t *testing.T) {
+	r := []string{
+		"111 13", "111 23", "111 33",
+		"222 13", "222 23", "222 33",
+		"333 13", "333 23", "333 33",
+	}
+	var result = []string{}
+
+	if err := Get("/Bslc/0/Dslc/*/Eslc/./Emap/0", Av, &result, "k3"); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestMapSliceIndexComplex(t *testing.T) {
+	r := []*E{e2, e5}
+	var result = []*E{}
+
+	if err := Get("/Bslc/./Bmap/0", Av, &result, mk2); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -315,7 +343,7 @@ func TestSliceSlice(t *testing.T) {
 
 	var result = []string{}
 
-	if err := Get("/S/*:-/*", Bv, &result); err != nil {
+	if err := Get("/S/*/.", Bv, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -332,7 +360,7 @@ func TestSliceSliceNoFlat(t *testing.T) {
 
 	var result = [][]string{}
 
-	if err := Get("/S/*", Bv, &result); err != nil {
+	if err := Get("/S/.", Bv, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
@@ -347,12 +375,12 @@ func TestSliceOnly(t *testing.T) {
 		[]string{"qqq", "www", "eee", "rrr", "fff"},
 	}
 	r := []string{
-		"aaa", "sss", "ddd", "zzz", "xxx", "ccc", "qqq", "www", "eee", "rrr", "fff",
+		"zzz", "xxx", "ccc",
 	}
 
 	var result = []string{}
 
-	if err := Get("/*:-/*", v, &result); err != nil {
+	if err := Get("/1/.", v, &result); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
