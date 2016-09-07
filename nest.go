@@ -9,12 +9,12 @@ import (
 
 func Get(path string, src, dst interface{}, keys ...interface{}) error {
 	v := reflect.ValueOf(src)
-	t := reflect.TypeOf(src)
-	fmt.Println("Getting path:", path, v, t)
+	// t := reflect.TypeOf(src)
+	// fmt.Println("Getting path:", path, v, t)
 
 	d := reflect.ValueOf(dst).Elem()
 	fields := strings.Split(path, "/")[1:]
-	fmt.Println("Fields:", fields)
+	// fmt.Println("Fields:", fields)
 
 	if err := get(fields, v, d, keys...); err != nil {
 		return err
@@ -36,7 +36,6 @@ func get(fields []string, val, dst reflect.Value, keys ...interface{}) error {
 		if err := processSlice(fields, val, dst, keys...); err != nil {
 			return err
 		}
-		fmt.Println("Processed value:", dst)
 	case reflect.Struct:
 		if err := processStruct(fields, val, dst, keys...); err != nil {
 			return err
@@ -50,6 +49,11 @@ func get(fields []string, val, dst reflect.Value, keys ...interface{}) error {
 		}
 	case reflect.Map:
 		if err := processMap(fields, val, dst, keys...); err != nil {
+			return err
+		}
+	case reflect.Interface:
+		val = val.Elem()
+		if err := get(fields, val, dst, keys...); err != nil {
 			return err
 		}
 	default:
@@ -100,8 +104,9 @@ func processStruct(fields []string, v, dst reflect.Value, keys ...interface{}) e
 func processMap(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	f := fields[0]
 	var k reflect.Value
-	if s, err := strconv.Atoi(f); err == nil {
-		fmt.Printf("using searate key: %v\n", keys)
+	switch true {
+	case isIndex(f):
+		s, _ := strconv.Atoi(f)
 		if s >= len(keys) {
 			return fmt.Errorf("not enough keys: %d -- %v", s, keys)
 		}
@@ -111,7 +116,9 @@ func processMap(fields []string, v, dst reflect.Value, keys ...interface{}) erro
 		} else {
 			keys = append(keys[:s], keys[s+1:])
 		}
-	} else {
+	case f == "*":
+		return getElemForEachMap(fields, v, dst, keys...)
+	default:
 		k = reflect.ValueOf(f)
 	}
 	if v.Type().Key() != k.Type() {

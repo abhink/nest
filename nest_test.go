@@ -387,3 +387,15 @@ func TestSliceOnly(t *testing.T) {
 		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
 	}
 }
+
+func TestMapJSON(t *testing.T) {
+	r := []interface{}{"T1A TV", "T3A", "T3B"}
+	var result = make([]interface{}, 0)
+
+	if err := Get("/category/television/*/subCategory/./subCat", JSONMap, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}

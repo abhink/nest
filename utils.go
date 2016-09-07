@@ -30,7 +30,7 @@ func nextField(fields []string) []string {
 	return fields[1:]
 }
 
-// retain structure -- . "/Bslc/./Dslc/*/Dstr"
+// retain structure -- *
 func getForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for i := 0; i < v.Len(); i++ {
 		if err := get(nextField(fields), v.Index(i), dst, keys...); err != nil {
@@ -40,7 +40,7 @@ func getForEach(fields []string, v, dst reflect.Value, keys ...interface{}) erro
 	return nil
 }
 
-// open structure -- *
+// open structure -- .
 func getElemForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for i := 0; i < v.Len(); i++ {
 		d := reflect.New(dst.Type().Elem()).Elem()
@@ -48,6 +48,20 @@ func getElemForEach(fields []string, v, dst reflect.Value, keys ...interface{}) 
 			return fmt.Errorf("error setting slice index %d - %v", i, err)
 		}
 		dst.Set(reflect.Append(dst, d))
+	}
+	return nil
+}
+
+func getElemForEachMap(fields []string, v, dst reflect.Value, keys ...interface{}) error {
+	var vals []reflect.Value
+	for _, val := range v.MapKeys() {
+		vals = append(vals, v.MapIndex(val))
+	}
+	mapValues := reflect.ValueOf(vals)
+	for i := 0; i < v.Len(); i++ {
+		if err := get(nextField(fields), mapValues, dst, keys...); err != nil {
+			return fmt.Errorf("error setting slice index %d - %v", i, err)
+		}
 	}
 	return nil
 }

@@ -116,3 +116,40 @@ var Bv = &struct {
 		[]string{"qqq", "www", "eee", "rrr", "fff"},
 	},
 }
+
+type jsonm map[string]interface{}
+
+var JSONMap = jsonm{
+	"brandId": 123,
+	"category": map[string]interface{}{
+		"television": []interface{}{
+			map[string]interface{}{
+				"cat": "T1",
+				"subCategory": []interface{}{
+					map[string]interface{}{
+						"subCat":         "T1A TV",
+						"warrantyPeriod": 6,
+					},
+				},
+				"warrantyPeriod": 12,
+			},
+			map[string]interface{}{
+				"warrantyPeriod": 4,
+				"cat":            "T3",
+				"subCategory": []interface{}{
+					map[string]interface{}{
+						"subCat":         "T3A",
+						"warrantyPeriod": 3,
+					},
+					map[string]interface{}{
+						"subCat":         "T3B",
+						"warrantyPeriod": 5,
+					},
+				},
+			},
+		},
+		"television_warrantyPeriod": 24,
+	},
+	"title": "BrandName",
+	"_id":   "string",
+}
