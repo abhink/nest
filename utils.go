@@ -72,3 +72,34 @@ func set(val, dst reflect.Value) error {
 	}
 	return nil
 }
+
+/*
+
+  err := From(JSONMap, &result).Get("category").Get("television").ForAll().
+    Get("subCategory").ForEach().Get("subCat")
+  if err != nil {
+    t.Errorf("error Getting field: %v", err)
+  }
+
+*/
+
+type partial struct {
+	val reflect.Value
+	dst reflect.Value
+	err error
+}
+
+func From(src, dst interface{}) *partial {
+	from := reflect.ValueOf(src)
+	to := reflect.ValueOf(dst).Elem()
+
+	return &partial{
+		from,
+		to,
+		nil,
+	}
+}
+
+func (p *partial) Get(key interface{}) *partial {
+
+}
