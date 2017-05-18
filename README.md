@@ -15,9 +15,9 @@ nest is a Go library to work on deeply nested datastructures in a more managed w
   Each path string must begin with a '/'. This / is the root structure. Simply getting
   the path '/' returns the original structure. e.g.:
   
-  var dst = []int{}
-  var src = []int{1, 2, 3}
-  Get("/", src, &dst) // dst == []int{1, 2, 3} == src -- deep copy
+  `var dst = []int{}`
+  `var src = []int{1, 2, 3}`
+  `Get("/", src, &dst) // dst == []int{1, 2, 3} == src -- deep copy`
   
   
   1. Direct field/index accessors:
