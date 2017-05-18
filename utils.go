@@ -30,8 +30,12 @@ func nextField(fields []string) []string {
 	return fields[1:]
 }
 
+func pathComplete(fields []string) bool {
+	return fields[0] == "$"
+}
+
 // retain structure -- *
-func getForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
+func mergeForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for i := 0; i < v.Len(); i++ {
 		if err := get(nextField(fields), v.Index(i), dst, keys...); err != nil {
 			return fmt.Errorf("error setting slice index %d - %v", i, err)
@@ -41,7 +45,7 @@ func getForEach(fields []string, v, dst reflect.Value, keys ...interface{}) erro
 }
 
 // open structure -- .
-func getElemForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
+func getForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for i := 0; i < v.Len(); i++ {
 		d := reflect.New(dst.Type().Elem()).Elem()
 		if err := get(nextField(fields), v.Index(i), d, keys...); err != nil {
@@ -52,16 +56,22 @@ func getElemForEach(fields []string, v, dst reflect.Value, keys ...interface{}) 
 	return nil
 }
 
-func getElemForEachMap(fields []string, v, dst reflect.Value, keys ...interface{}) error {
-	var vals []reflect.Value
+func mergeForEachMap(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for _, val := range v.MapKeys() {
-		vals = append(vals, v.MapIndex(val))
-	}
-	mapValues := reflect.ValueOf(vals)
-	for i := 0; i < v.Len(); i++ {
-		if err := get(nextField(fields), mapValues, dst, keys...); err != nil {
-			return fmt.Errorf("error setting slice index %d - %v", i, err)
+		if err := get(nextField(fields), v.MapIndex(val), dst, keys...); err != nil {
+			return fmt.Errorf("error setting slice index %v - %v", val, err)
 		}
+	}
+	return nil
+}
+
+func getForEachMap(fields []string, v, dst reflect.Value, keys ...interface{}) error {
+	for _, val := range v.MapKeys() {
+		d := reflect.New(dst.Type().Elem()).Elem()
+		if err := get(nextField(fields), v.MapIndex(val), d, keys...); err != nil {
+			return fmt.Errorf("error setting map key %s - %v", val, err)
+		}
+		dst.Set(reflect.Append(dst, d))
 	}
 	return nil
 }

@@ -148,6 +148,32 @@ var JSONMap = jsonm{
 				},
 			},
 		},
+		"radio": []interface{}{
+			map[string]interface{}{
+				"cat": "R1",
+				"subCategory": []interface{}{
+					map[string]interface{}{
+						"subCat":         "R1A RAD",
+						"warrantyPeriod": 16,
+					},
+				},
+				"warrantyPeriod": 2,
+			},
+			map[string]interface{}{
+				"warrantyPeriod": 4,
+				"cat":            "R3",
+				"subCategory": []interface{}{
+					map[string]interface{}{
+						"subCat":         "R3A",
+						"warrantyPeriod": 3,
+					},
+					map[string]interface{}{
+						"subCat":         "R3B",
+						"warrantyPeriod": 5,
+					},
+				},
+			},
+		},
 		"television_warrantyPeriod": 24,
 	},
 	"title": "BrandName",

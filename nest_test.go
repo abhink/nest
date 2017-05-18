@@ -1,13 +1,23 @@
+// Tests/Example for reference. In each test function, 'v' is the src value
+// while 'r' is the expected result.
 package nest
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
 
 type InnerSimple struct {
 	I int
 	S string
+}
+
+type Simple struct {
+	SimpleI int
+	SimpleS string
+	InnerSimple
+	SimpleSlc []InnerSimple
 }
 
 func TestSlice(t *testing.T) {
@@ -25,14 +35,14 @@ func TestSlice(t *testing.T) {
 		t.Errorf("unexpected ouput: %v -- %T", result, result)
 	}
 
-	intr := []int{}
+	intResult := []int{}
 
-	if err := Get("/./I", v, &intr); err != nil {
+	if err := Get("/./I", v, &intResult); err != nil {
 		t.Errorf("error Getting value: %v", err)
 	}
 
-	if !reflect.DeepEqual(intr, []int{1, 2, 3}) {
-		t.Errorf("unexpected ouput: %v -- %T", intr, intr)
+	if !reflect.DeepEqual(intResult, []int{1, 2, 3}) {
+		t.Errorf("unexpected ouput: %v -- %T", intResult, intResult)
 	}
 
 	intrm := []int{}
@@ -41,6 +51,128 @@ func TestSlice(t *testing.T) {
 	}
 	if !reflect.DeepEqual(intrm, []int{1, 2, 3}) {
 		t.Errorf("unexpected ouput: %v -- %T", intrm, intrm)
+	}
+}
+
+func TestSliceNested(t *testing.T) {
+	v := []Simple{
+		{1, "one", InnerSimple{10, "ten"}, nil},
+		{2, "two", InnerSimple{20, "twenty"}, nil},
+		{3, "three", InnerSimple{30, "thirty"}, nil},
+	}
+	r := []InnerSimple{{10, "ten"}, {20, "twenty"}, {30, "thirty"}}
+
+	var result []InnerSimple
+
+	if err := Get("/./InnerSimple", v, &result); err != nil {
+		t.Errorf("error Getting value: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %v -- %T", result, result)
+	}
+}
+
+func TestSliceNestedField(t *testing.T) {
+	v := []Simple{
+		{1, "one", InnerSimple{10, "ten"}, nil},
+		{2, "two", InnerSimple{20, "twenty"}, nil},
+		{3, "three", InnerSimple{30, "thirty"}, nil},
+	}
+	r := []int{10, 20, 30}
+
+	var result []int
+
+	if err := Get("/./InnerSimple/I", v, &result); err != nil {
+		t.Errorf("error Getting value: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %v -- %T", result, result)
+	}
+}
+
+func TestSliceNestedSlice(t *testing.T) {
+	v := []Simple{
+		{1, "one", InnerSimple{10, "ten"}, []InnerSimple{InnerSimple{1, "a"}, InnerSimple{2, "b"}}},
+		{2, "two", InnerSimple{20, "twenty"}, []InnerSimple{InnerSimple{3, "c"}, InnerSimple{4, "d"}}},
+		{3, "three", InnerSimple{30, "thirty"}, []InnerSimple{InnerSimple{5, "e"}, InnerSimple{6, "f"}}},
+	}
+	r := [][]InnerSimple{
+		[]InnerSimple{InnerSimple{1, "a"}, InnerSimple{2, "b"}},
+		[]InnerSimple{InnerSimple{3, "c"}, InnerSimple{4, "d"}},
+		[]InnerSimple{InnerSimple{5, "e"}, InnerSimple{6, "f"}},
+	}
+
+	var result [][]InnerSimple
+
+	if err := Get("/./SimpleSlc", v, &result); err != nil {
+		t.Errorf("error Getting value: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %v -- %T", result, result)
+	}
+}
+
+func TestSliceNestedSliceDot(t *testing.T) {
+	v := []Simple{
+		{1, "one", InnerSimple{10, "ten"}, []InnerSimple{InnerSimple{1, "a"}, InnerSimple{2, "b"}}},
+		{2, "two", InnerSimple{20, "twenty"}, []InnerSimple{InnerSimple{3, "c"}, InnerSimple{4, "d"}}},
+		{3, "three", InnerSimple{30, "thirty"}, []InnerSimple{InnerSimple{5, "e"}, InnerSimple{6, "f"}}},
+	}
+	r := [][]string{{"a", "b"}, {"c", "d"}, {"e", "f"}}
+
+	var result [][]string
+
+	if err := Get("/./SimpleSlc/./S", v, &result); err != nil {
+		t.Errorf("error Getting value: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %v -- %T", result, result)
+	}
+}
+
+func TestSliceNestedSliceStar(t *testing.T) {
+	v := []Simple{
+		{1, "one", InnerSimple{10, "ten"}, []InnerSimple{InnerSimple{1, "a"}, InnerSimple{2, "b"}}},
+		{2, "two", InnerSimple{20, "twenty"}, []InnerSimple{InnerSimple{3, "c"}, InnerSimple{4, "d"}}},
+		{3, "three", InnerSimple{30, "thirty"}, []InnerSimple{InnerSimple{5, "e"}, InnerSimple{6, "f"}}},
+	}
+	r := []string{"a", "b", "c", "d", "e", "f"}
+
+	var result []string
+
+	if err := Get("/*/SimpleSlc/./S", v, &result); err != nil {
+		t.Errorf("error Getting value: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %v -- %T", result, result)
+	}
+}
+
+func TestSliceFlatten(t *testing.T) {
+	type InnerSimpleSlc struct {
+		InnerSimple
+		Slc []int
+	}
+	v := []InnerSimpleSlc{
+		{InnerSimple{1, "one"}, []int{1, 2}},
+		{InnerSimple{2, "two"}, []int{2, 4}},
+		{InnerSimple{3, "three"}, []int{3, 6}},
+	}
+	r := 4
+
+	var result int
+
+	if err := Get("/1/Slc/1", v, &result); err != nil {
+		t.Errorf("error Getting value: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %v -- %T", result, result)
 	}
 }
 
@@ -219,6 +351,7 @@ func TestComplexValueFlattenB(t *testing.T) {
 		t.Errorf("unexpected ouput: %#v -- %v", result[2][1].Eint, r)
 	}
 
+	// Below is the code that would be required to replace Get call above.
 	// for _, b := range Av {
 	// 	for _, d := range b {
 	// 		for _, e := range d {
@@ -238,6 +371,9 @@ func TestComplexValueFlattenBD(t *testing.T) {
 	if result[7].Eint != r {
 		t.Errorf("unexpected ouput: %#v -- %v", result[8].Eint, r)
 	}
+
+	// TOFO: Add more modifiers.
+	// Example:
 	// Get("/Bslc/:ALL:FLATTEN/Dslc/:ALL:FLATTEN/Eslc/:ALL", Av, &result)
 	// Get("/Bslc:ALL:FLATTEN/Dslc:ALL:FLATTEN/Eslc:ALL", Av, &result)
 	// Get("/Bslc/:A:F/Dslc/:A:F/Eslc/:A", Av, &result)
@@ -351,7 +487,7 @@ func TestSliceSlice(t *testing.T) {
 	}
 }
 
-func TestSliceSliceNoFlat(t *testing.T) {
+func TestSliceSliceNested(t *testing.T) {
 	r := [][]string{
 		[]string{"aaa", "sss", "ddd"},
 		[]string{"zzz", "xxx", "ccc"},
@@ -388,11 +524,105 @@ func TestSliceOnly(t *testing.T) {
 	}
 }
 
+func TestMapSimpleDot(t *testing.T) {
+	m := map[string]int{"A": 1, "B": 2, "C": 3, "D": 4}
+	r := []int{1, 2, 3, 4}
+	var result []int
+
+	if err := Get("/.", m, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	sort.Ints(result)
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestMapSimpleDotField(t *testing.T) {
+	m := map[string]InnerSimple{"A": {1, "one"}, "B": {2, "two"}, "C": {3, "three"}}
+	r := []int{1, 2, 3}
+	var result []int
+
+	if err := Get("/./I", m, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	sort.Ints(result)
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestMapSimpleDotSlice(t *testing.T) {
+	m := map[string][]InnerSimple{
+		"A": []InnerSimple{{11, "oneA"}, {12, "twoA"}, {13, "threeA"}},
+		"B": []InnerSimple{{21, "oneB"}, {22, "twoB"}, {23, "threeB"}},
+		"C": []InnerSimple{{31, "oneC"}, {32, "twoC"}, {33, "threeC"}},
+	}
+	r := []int{11, 12, 13, 21, 22, 23, 31, 32, 33}
+	var result []int
+
+	if err := Get("/*/./I", m, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	sort.Ints(result)
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
 func TestMapJSON(t *testing.T) {
 	r := []interface{}{"T1A TV", "T3A", "T3B"}
 	var result = make([]interface{}, 0)
 
 	if err := Get("/category/television/*/subCategory/./subCat", JSONMap, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestMapJSON1(t *testing.T) {
+	r := 24
+	var result interface{}
+
+	if err := Get("/category/television_warrantyPeriod", JSONMap, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestMapJSON2(t *testing.T) {
+	r := 5
+	var result interface{}
+
+	if err := Get("/category/television/1/subCategory/1/warrantyPeriod", JSONMap, &result); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func TestMapJSON3(t *testing.T) {
+	r := 5
+	var result interface{}
+
+	if err := Get("/category/television/1/0/1/warrantyPeriod", JSONMap, &result, "subCategory"); err != nil {
+		t.Errorf("error Getting field: %v", err)
+	}
+	if !reflect.DeepEqual(result, r) {
+		t.Errorf("unexpected ouput: %#v -- %#v", result, r)
+	}
+}
+
+func xTestMapJSON4(t *testing.T) {
+	r := 5
+	var result interface{}
+
+	if err := Get("/category/0/1/1/1/warrantyPeriod", JSONMap, &result, "subCategory"); err != nil {
 		t.Errorf("error Getting field: %v", err)
 	}
 	if !reflect.DeepEqual(result, r) {
