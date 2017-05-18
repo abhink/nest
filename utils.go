@@ -34,7 +34,9 @@ func pathComplete(fields []string) bool {
 	return fields[0] == "$"
 }
 
-// retain structure -- *
+// mergeForEach is called for the '*' accessor on a slice src. Calls get for each
+// value from src without modifying the dst. By doing this, values following
+// the '*' in the path are put into the same slice.
 func mergeForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for i := 0; i < v.Len(); i++ {
 		if err := get(nextField(fields), v.Index(i), dst, keys...); err != nil {
@@ -44,7 +46,8 @@ func mergeForEach(fields []string, v, dst reflect.Value, keys ...interface{}) er
 	return nil
 }
 
-// open structure -- .
+// getForEach is called for the '.' accessor on a slice src. This method adds
+// the identified value (value name given in the path) to the dst. dst must be of slice type.
 func getForEach(fields []string, v, dst reflect.Value, keys ...interface{}) error {
 	for i := 0; i < v.Len(); i++ {
 		d := reflect.New(dst.Type().Elem()).Elem()
@@ -81,35 +84,4 @@ func set(val, dst reflect.Value) error {
 		return fmt.Errorf("incompatible types - %s %s", dst.Type(), val.Type())
 	}
 	return nil
-}
-
-/*
-
-  err := From(JSONMap, &result).Get("category").Get("television").ForAll().
-    Get("subCategory").ForEach().Get("subCat")
-  if err != nil {
-    t.Errorf("error Getting field: %v", err)
-  }
-
-*/
-
-type partial struct {
-	val reflect.Value
-	dst reflect.Value
-	err error
-}
-
-func From(src, dst interface{}) *partial {
-	from := reflect.ValueOf(src)
-	to := reflect.ValueOf(dst).Elem()
-
-	return &partial{
-		from,
-		to,
-		nil,
-	}
-}
-
-func (p *partial) Get(key interface{}) *partial {
-
 }
