@@ -1,16 +1,16 @@
 # nest
 nest is a Go library to work on deeply nested datastructures in a more managed way.
 
-  nest is a library that provides an easy way to retreive fields from deeply nested
-  data structures. Structure here can be of any Go type that can store data (slice,
-  maps, structs, primitives).
+nest is a library that provides an easy way to retreive fields from deeply nested
+data structures. Structure here can be of any Go type that can store data (slice,
+maps, structs, primitives).
   
-  Fields are accessed by using a specific path string. The path string contains
-  accessors for the nested structures seperated by `/`.
+Fields are accessed by using a specific path string. The path string contains
+accessors for the nested structures seperated by `/`.
   
-  Accessors can be of two types:
-    1. Direct field/index accessor.
-    2. Special types.
+Accessors can be of two types:
+1. Direct field/index accessor.
+2. Special types.
     
   Each path string must begin with a `/`. This `/` is the root structure. Simply getting
   the path `/` returns the original structure. e.g.:
@@ -118,17 +118,17 @@ accessor type comes into play.
      
 **The Star (`*`) Accessor:**
 There are two important rules associated with this accessor.
-a) Star accessor can only be used to replace a '.' in the path.
-b) Star accessor cannot be the last accessor (or only) in a path. I.e., path '/A/B/* /C'
-   is illegal.
-What '*' does is that it breaks the structure or returned result. If in above path
-`/./SimpleSlc/./S`, we replace the first '.' with a star, we get the following result:
+a) Star accessor can only be used to replace a `.` in the path.
+b) Star accessor cannot be the last accessor (or only) in a path. I.e., path `/A/B/*/C`
+   is illegal.<br>
+What `*` does is that it breaks the structure or returned result. If in above path
+`/./SimpleSlc/./S`, we replace the first `.` with a star, we get the following result:
      
     var result [][]string
-    Get("/* /SimpleSlc/./S", v, &result) // result == []string{"a", "b", "c", "d", "e", "f"}
+    Get("/*/SimpleSlc/./S", v, &result) // result == []string{"a", "b", "c", "d", "e", "f"}
      
-As evident, '*' merges together the outer slice. This is why '*' must always be used
-before a '.', because it must have some result to merge together.
+As evident, `*` merges together the outer slice. This is why `*` must always be used
+before a `.`, because it must have some result to merge together.
 Many more examples can be found in the test files, which also include map accesses.
      
   
