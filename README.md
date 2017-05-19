@@ -117,8 +117,8 @@ accessor type comes into play.
     
      
 **The Star (`*`) Accessor:**
-There are two important rules associated with this accessor.
-a) Star accessor can only be used to replace a `.` in the path.
+There are two important rules associated with this accessor.<br>
+a) Star accessor can only be used to replace a `.` in the path.<br>
 b) Star accessor cannot be the last accessor (or only) in a path. I.e., path `/A/B/*/C`
    is illegal.<br>
 What `*` does is that it breaks the structure or returned result. If in above path
