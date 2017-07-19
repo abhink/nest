@@ -174,35 +174,23 @@ func get(fields []string, val, dst reflect.Value, keys ...interface{}) error {
 		return nil
 	}
 
+	var err error
 	switch val.Kind() {
-	case reflect.Slice:
-		if err := processSlice(fields, val, dst, keys...); err != nil {
-			return err
-		}
-	case reflect.Struct:
-		if err := processStruct(fields, val, dst, keys...); err != nil {
-			return err
-		}
 	case reflect.String, reflect.Int:
 		dst.Set(val)
-	case reflect.Ptr:
-		if err := get(fields, val.Elem(), dst, keys...); err != nil {
-			return err
-		}
+	case reflect.Slice:
+		err = processSlice(fields, val, dst, keys...)
+	case reflect.Struct:
+		err = processStruct(fields, val, dst, keys...)
 	case reflect.Map:
-		if err := processMap(fields, val, dst, keys...); err != nil {
-			return err
-		}
-	case reflect.Interface:
-		val = val.Elem()
-		if err := get(fields, val, dst, keys...); err != nil {
-			return err
-		}
+		err = processMap(fields, val, dst, keys...)
+	case reflect.Ptr, reflect.Interface:
+		err = get(fields, val.Elem(), dst, keys...)
 	default:
 		// TODO: Handle default better.
-		fmt.Println("Got something else", val, fields, val.Kind())
+		err = fmt.Errorf("unknown value type, cannot process: %s", val.Kind())
 	}
-	return nil
+	return err
 }
 
 func processSlice(fields []string, v, dst reflect.Value, keys ...interface{}) error {
